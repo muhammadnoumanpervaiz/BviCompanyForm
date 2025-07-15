@@ -86,30 +86,32 @@ export default function CompanyDetailsForm() {
   }
 
   const handleSaveAndExit = async (values: CompanyFormData) => {
-    setIsSaving(true)
+  setIsSaving(true)
 
-    try {
-      // Check if form has any data to save
-      const hasData = Object.values(values).some((value) => value !== "")
+  try {
+    await companyValidationSchema.validate(values, { abortEarly: false })
 
-      if (!hasData) {
-        toast.error("No data to save. Please fill at least one field.")
-        setIsSaving(false)
-        return
+    console.log("Saving and exiting:", values)
+
+    await new Promise((resolve) => setTimeout(resolve, 1500))
+
+    toast.success("Form saved successfully!")
+  } catch (error: any) {
+    if (error.name === "ValidationError") {
+      if (error.inner && error.inner.length > 0) {
+        error.inner.forEach((err: any) => {
+          toast.error(err.message)
+        })
+      } else {
+        toast.error(error.message)
       }
-
-      console.log("Saving and exiting:", values)
-
-      // Simulate save operation
-      await new Promise((resolve) => setTimeout(resolve, 1500))
-
-      toast.success("Form saved successfully!")
-    } catch (error) {
+    } else {
       toast.error("An error occurred while saving the form.")
-    } finally {
-      setIsSaving(false)
     }
+  } finally {
+    setIsSaving(false)
   }
+}
 
   return (
     <div className="min-h-screen bg-slate-900 text-white">
